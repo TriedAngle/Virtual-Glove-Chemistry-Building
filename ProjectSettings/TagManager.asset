@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - Selectable
+  - Pane
+  - GenC
+  - GenH
+  - GenO
+  - AtomPane
   layers:
   - Default
   - TransparentFX

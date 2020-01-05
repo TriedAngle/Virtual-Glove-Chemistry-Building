@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 using System.IO.Ports;
+using UnityEngine.Serialization;
 
 
 public class HandController : MonoBehaviour
@@ -28,18 +29,20 @@ public class HandController : MonoBehaviour
     private SerialPort _serialPort;
     private Thread _serialReader;
 
-    private bool windows = false;
+    private const bool Windows = false;
     private string _serialPortPath = "";
     private const int BaudRate = 9600;
     private const int ValueAmount = 11;
     private const char ValueSeparator = '|';
 
-    private bool isRunning;
+
+    private bool _isRunning;
     private const int ThreadSleepInMillis = 10;
 
     private float[] _values;
-
-    public static bool Grabbing = false;
+    public bool manualControl = true;
+    public bool grabbingOverride;
+    private static bool _grabbing;
 
     // Fingers
     // Thumb Finger
@@ -88,24 +91,27 @@ public class HandController : MonoBehaviour
     private void Start()
     {
         // Initialize Variables
-        isRunning = true;
+        _isRunning = true;
         _values = new float[ValueAmount];
 
         // Creating Serial
-        _serialPortPath = windows ? "COM0" : "/dev/ttyUSB0";
-        _serialPort = new SerialPort(_serialPortPath, BaudRate);
-        _serialPort.Open();
+        if (!manualControl)
+        {
+            _serialPortPath = Windows ? "COM0" : "/dev/ttyUSB0";
+            _serialPort = new SerialPort(_serialPortPath, BaudRate);
+            _serialPort.Open();
 
-        //Creating Thread
-        _serialReader = new Thread(ReadData);
-        _serialReader.Start();
+            //Creating Thread
+            _serialReader = new Thread(ReadData);
+            _serialReader.Start();
+        }
     }
 
     public void Update()
     {
         // Rotate Hand
-        hand.transform.Rotate(-_values[5] * Time.deltaTime, -_values[6] * Time.deltaTime, -_values[7] * Time.deltaTime );
-        
+        hand.transform.Rotate(-_values[5] * Time.deltaTime, -_values[6] * Time.deltaTime, -_values[7] * Time.deltaTime);
+
         // Rotate Fingers
         thumb1.transform.localRotation = Quaternion.Euler(_values[0], 0f, 0f);
         thumb2.transform.localRotation = Quaternion.Euler(2f * _values[0], 0f, 0f);
@@ -125,22 +131,26 @@ public class HandController : MonoBehaviour
         pinky1.transform.localRotation = Quaternion.Euler(_values[4], 0f, 0f);
         pinky2.transform.localRotation = Quaternion.Euler(2f * _values[4], 0f, 0f);
         pinky3.transform.localRotation = Quaternion.Euler(3f * _values[4], 0f, 0f);
-        
+
         if (_values[0] + _values[1] + _values[2] + _values[3] + _values[4] >= 300)
         {
-            Grabbing = true;
+            _grabbing = true;
         }
         else
         {
-            Grabbing = false;
+            _grabbing = false;
         }
-        
+
+        if (manualControl)
+        {
+            _grabbing = grabbingOverride;
+        }
     }
 
     private void ReadData()
     {
         // Destroy Thread when exiting Program
-        while (isRunning)
+        while (_isRunning)
         {
             var current = _serialPort.ReadLine();
             Console.WriteLine(current);
@@ -162,14 +172,14 @@ public class HandController : MonoBehaviour
             Thread.Sleep(ThreadSleepInMillis);
         }
     }
-    
+
     void OnApplicationQuit()
     {
-        isRunning = false;
+        _isRunning = false;
     }
 
     public static bool IsGrabbing()
     {
-        return Grabbing;
+        return _grabbing;
     }
 }
