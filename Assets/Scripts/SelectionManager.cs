@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,14 +8,14 @@ public class SelectionManager : MonoBehaviour
     public string selectableTag = "Selectable";
     public Material highLightMaterial;
     public Transform hand;
+    public Transform handRayPoint;
     public Transform handGrabPlaceHolder;
 
     private Material _selectedMaterial;
     private bool _holding = false;
     private Transform _currentHolding;
     private Transform _selection;
-
-    // Update is called once per frame
+    
     void Update()
     {
         if (_selection != null)
@@ -24,8 +25,8 @@ public class SelectionManager : MonoBehaviour
             _selection = null;
         }
 
-        var ray = new Ray(hand.position, hand.forward);
-        Debug.DrawRay(ray.origin, ray.direction, Color.green);
+        var ray = new Ray(handRayPoint.position, handRayPoint.up);
+        Debug.DrawRay(ray.origin, ray.direction*3, Color.green);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 3))
         {
