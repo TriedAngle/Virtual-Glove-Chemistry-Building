@@ -4,19 +4,17 @@ using UnityEngine;
 
 public class CAtom : MonoBehaviour
 {
-    private const float RayDistance = 1.2f;
+    private const float RayDistance = 2.0f;
 
     private bool _hasUp;
     private bool _hasRight;
     private bool _hasDown;
     private bool _hasLeft;
 
-    // Start is called before the first frame update
     void Start()
     {
     }
 
-    // Update is called once per frame
     void Update()
     {
         var ray0 = new Ray(transform.position, transform.up);
@@ -24,10 +22,10 @@ public class CAtom : MonoBehaviour
         var ray2 = new Ray(transform.position, -transform.up);
         var ray3 = new Ray(transform.position, -transform.forward);
 
-        Debug.DrawRay(ray0.origin, ray0.direction * 1, Color.green);
-        Debug.DrawRay(ray1.origin, ray1.direction * 1, Color.green);
-        Debug.DrawRay(ray2.origin, ray2.direction * 1, Color.green);
-        Debug.DrawRay(ray3.origin, ray3.direction * 1, Color.green);
+        Debug.DrawRay(ray0.origin, ray0.direction * RayDistance, Color.green);
+        Debug.DrawRay(ray1.origin, ray1.direction * RayDistance, Color.green);
+        Debug.DrawRay(ray2.origin, ray2.direction * RayDistance, Color.green);
+        Debug.DrawRay(ray3.origin, ray3.direction * RayDistance, Color.green);
 
         RaycastHit hit;
         if (Physics.Raycast(ray0, out hit, RayDistance))

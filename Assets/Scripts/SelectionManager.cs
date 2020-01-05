@@ -10,6 +10,8 @@ public class SelectionManager : MonoBehaviour
     public string genC = "GenC";
     public string genH = "GenH";
     public string genO = "GenO";
+    public string atomPaneTag = "AtomPane";
+    
     public Material highLightMaterial;
     public Transform hand;
     public Transform handRayPoint;
@@ -23,6 +25,7 @@ public class SelectionManager : MonoBehaviour
     private Transform _selection;
 
     public GameObject cAtom;
+    public GameObject hAtom;
     private GameObject _newAtom;
 
     void Update()
@@ -46,7 +49,7 @@ public class SelectionManager : MonoBehaviour
 
             var selection = hit.transform;
 
-            if (selection.CompareTag(genC))
+            if (selection.CompareTag(genC) && !_holding)
             {
                 var selectionRenderer = selection.GetComponent<Renderer>();
                 if (selectionRenderer != null && !_holding)
@@ -66,8 +69,29 @@ public class SelectionManager : MonoBehaviour
                     ToHand();
                 }
             }
+            
+            if (selection.CompareTag(genH) &&!_holding)
+            {
+                var selectionRenderer = selection.GetComponent<Renderer>();
+                if (selectionRenderer != null && !_holding)
+                {
+                    _selectedMaterial = selection.GetComponent<Renderer>().material;
+                    selectionRenderer.material = highLightMaterial;
+                }
+
+                _selection = selection;
+                if (!_holding && HandController.IsGrabbing())
+                {
+                    selectionRenderer.material = _selectedMaterial;
+                    _newAtom = (GameObject) Instantiate(hAtom, hit.point, Quaternion.identity);
+                    _selection = _newAtom.transform;
+                    _holding = true;
+                    _currentHolding = _selection;
+                    ToHand();
+                }
+            }
                 
-            if (selection.CompareTag(selectableTag))
+            if (selection.CompareTag(selectableTag) && !_holding)
             {
                 var selectionRenderer = selection.GetComponent<Renderer>();
                 if (!_holding && selectionRenderer != null)
@@ -84,6 +108,26 @@ public class SelectionManager : MonoBehaviour
                     _holding = true;
                 }
             }
+            if (_holding)
+            {
+                if (_currentHolding.CompareTag(selectableTag) && selection.CompareTag(atomPaneTag))
+                {
+                    var selectionRenderer = selection.GetComponent<Renderer>();
+                    if (selectionRenderer != null)
+                    {
+                        _selectedMaterial = selection.GetComponent<Renderer>().material;
+                        selectionRenderer.material = highLightMaterial;
+                    }
+                    _selection = selection;
+                    if (!HandController.IsGrabbing())
+                    {
+                        _selectionNewPos = selection.position;
+                        OffHand();
+                        _currentHolding = null;
+                        _holding = false;
+                    }
+                }
+            }
         }
 
         if (!HandController.IsGrabbing() && _holding)
@@ -96,9 +140,6 @@ public class SelectionManager : MonoBehaviour
 
     private void ToHand()
     {
-//        _selection.GetComponent<BoxCollider>().enabled = false;
-//        _selection.GetComponent<Rigidbody>().useGravity = false;
-//        _selection.GetComponent<Rigidbody>().freezeRotation = true;
         _selection.transform.position = handGrabPlaceHolder.position;
         _selection.transform.parent = handGrabPlaceHolder.transform;
     }
@@ -108,7 +149,5 @@ public class SelectionManager : MonoBehaviour
         _currentHolding.transform.position = _selectionNewPos;
         _currentHolding.transform.rotation = Quaternion.identity;
         _currentHolding.transform.parent = null;
-//        _currentHolding.GetComponent<Rigidbody>().freezeRotation = false;
-//        _currentHolding.GetComponent<Rigidbody>().useGravity = true;
     }
 }
