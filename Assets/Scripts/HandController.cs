@@ -40,7 +40,7 @@ public class HandController : MonoBehaviour
     private const int ThreadSleepInMillis = 10;
 
     private float[] _values;
-    public bool manualControl = true;
+    private bool manualControl = false;
     public bool grabbingOverride;
     private static bool _grabbing;
 
